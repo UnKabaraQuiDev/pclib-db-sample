@@ -59,4 +59,3 @@ mvn -f pclib-db-sample-cleanup/pom.xml spring-boot:run
 - `@Query` methods with `{NAME}`, `{Q:...}`, `{F:sum}`, and custom `{F:text_length}`
 - a Spring `@Configuration` that registers `text_length` in all three SQL function resolvers
 - migration by running app versions in order instead of calling `DataBase#migrate(...)` in the runner
-# pclib-db-sample

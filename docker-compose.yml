@@ -1,0 +1,107 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pclib_sample_mysql
+#    ports:
+#      - "3306:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -proot --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - pclib-sample-mysql:/var/lib/mysql
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: pclib_sample_postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+#    ports:
+#      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pclib_sample_postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - pclib-sample-postgres:/var/lib/postgresql/data
+
+  sample-v1:
+    image: maven:3.9.9-eclipse-temurin-21
+    working_dir: /workspace
+    profiles: ["sample"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      PCLIB_SAMPLE_MYSQL_HOST: mysql
+      PCLIB_SAMPLE_MYSQL_PORT: 3306
+      PCLIB_SAMPLE_MYSQL_USERNAME: root
+      PCLIB_SAMPLE_MYSQL_PASSWORD: root
+      PCLIB_SAMPLE_POSTGRES_HOST: postgres
+      PCLIB_SAMPLE_POSTGRES_PORT: 5432
+      PCLIB_SAMPLE_POSTGRES_USERNAME: postgres
+      PCLIB_SAMPLE_POSTGRES_PASSWORD: postgres
+      PCLIB_SAMPLE_SQLITE_DIR: /workspace/target/pclib-db-sample-sqlite
+    volumes:
+      - .:/workspace
+      - ${HOME}/.m2:/root/.m2
+    command: ["bash", "-lc", "mvn -f pclib-db-sample-v1/pom.xml -DskipTests spring-boot:run"]
+
+  sample-v2:
+    image: maven:3.9.9-eclipse-temurin-21
+    working_dir: /workspace
+    profiles: ["sample"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      PCLIB_SAMPLE_MYSQL_HOST: mysql
+      PCLIB_SAMPLE_MYSQL_PORT: 3306
+      PCLIB_SAMPLE_MYSQL_USERNAME: root
+      PCLIB_SAMPLE_MYSQL_PASSWORD: root
+      PCLIB_SAMPLE_POSTGRES_HOST: postgres
+      PCLIB_SAMPLE_POSTGRES_PORT: 5432
+      PCLIB_SAMPLE_POSTGRES_USERNAME: postgres
+      PCLIB_SAMPLE_POSTGRES_PASSWORD: postgres
+      PCLIB_SAMPLE_SQLITE_DIR: /workspace/target/pclib-db-sample-sqlite
+    volumes:
+      - .:/workspace
+      - ${HOME}/.m2:/root/.m2
+    command: ["bash", "-lc", "mvn -f pclib-db-sample-v2/pom.xml -DskipTests spring-boot:run"]
+
+  sample-cleanup:
+    image: maven:3.9.9-eclipse-temurin-21
+    working_dir: /workspace
+    profiles: ["sample"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      PCLIB_SAMPLE_MYSQL_HOST: mysql
+      PCLIB_SAMPLE_MYSQL_PORT: 3306
+      PCLIB_SAMPLE_MYSQL_USERNAME: root
+      PCLIB_SAMPLE_MYSQL_PASSWORD: root
+      PCLIB_SAMPLE_POSTGRES_HOST: postgres
+      PCLIB_SAMPLE_POSTGRES_PORT: 5432
+      PCLIB_SAMPLE_POSTGRES_USERNAME: postgres
+      PCLIB_SAMPLE_POSTGRES_PASSWORD: postgres
+      PCLIB_SAMPLE_SQLITE_DIR: /workspace/target/pclib-db-sample-sqlite
+    volumes:
+      - .:/workspace
+      - ${HOME}/.m2:/root/.m2
+    command: ["bash", "-lc", "mvn -f pclib-db-sample-cleanup/pom.xml -DskipTests spring-boot:run"]
+
+volumes:
+  pclib-sample-mysql:
+  pclib-sample-postgres:

@@ -1,0 +1,44 @@
+spring:
+  main:
+    banner-mode: off
+
+logging:
+  level:
+    root: info
+
+pclib:
+  db:
+    enabled: true
+    auto-create: false
+    auto-migrate: true
+    auto-add-columns: true
+    auto-remove-columns: false
+    expose-connector: true
+    expose-database: true
+
+    sqliteDemo:
+      qualifier: sqliteDemo
+      protocol: sqlite
+      name: pclib_sample_sqlite
+      dir-path: ${PCLIB_SAMPLE_SQLITE_DIR:./target/pclib-db-sample-sqlite}
+      migration-schema-name: pclib_sample_sqlite_migrations
+
+    mysqlDemo:
+      qualifier: mysqlDemo
+      protocol: mysql
+      name: pclib_sample_mysql
+      host: ${PCLIB_SAMPLE_MYSQL_HOST:localhost}
+      port: ${PCLIB_SAMPLE_MYSQL_PORT:3306}
+      username: ${PCLIB_SAMPLE_MYSQL_USERNAME:root}
+      password: ${PCLIB_SAMPLE_MYSQL_PASSWORD:root}
+      migration-schema-name: pclib_sample_mysql_migrations
+
+    postgresDemo:
+      qualifier: postgresDemo
+      protocol: postgresql
+      name: pclib_sample_postgres
+      host: ${PCLIB_SAMPLE_POSTGRES_HOST:localhost}
+      port: ${PCLIB_SAMPLE_POSTGRES_PORT:5432}
+      username: ${PCLIB_SAMPLE_POSTGRES_USERNAME:postgres}
+      password: ${PCLIB_SAMPLE_POSTGRES_PASSWORD:postgres}
+      migration-schema-name: pclib_sample_postgres_migrations
