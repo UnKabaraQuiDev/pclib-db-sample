@@ -12,7 +12,7 @@ MySQL and PostgreSQL run through Docker Compose. All database properties live in
 
 ## Run the full sequence
 
-Install the local PCLib artifacts first, then run:
+To test, run:
 
 ```bash
 ./run-sample.sh
@@ -48,7 +48,7 @@ mvn -f pclib-db-sample-cleanup/pom.xml spring-boot:run
 
 ## What it demonstrates
 
-- repeated `@Unique`
+- repeated `@Unique` on the same column
 - per-DBMS repeated `@DefaultValue`
 - direct `@TypeHint`
 - meta-annotation type hints through `@MaxLength`

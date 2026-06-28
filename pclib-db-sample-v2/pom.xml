@@ -7,7 +7,8 @@
 	<artifactId>pclib-db-sample-v2</artifactId>
 	<version>1.1.0-SNAPSHOT</version>
 	<name>PCLib DB Spring Sample V2</name>
-	<description>Runnable Spring Boot sample for pclib-db-spring and pclib-db-all.</description>
+	<description>Runnable Spring Boot sample for pclib-db-spring and
+		pclib-db-all.</description>
 
 	<properties>
 		<java.version>17</java.version>
@@ -15,6 +16,13 @@
 		<spring-boot.version>4.1.0</spring-boot.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+
+	<repositories>
+		<repository>
+			<id>nexus.kbra.lu-public</id>
+			<url>https://nexus.kbra.lu/repository/maven-public/</url>
+		</repository>
+	</repositories>
 
 	<dependencyManagement>
 		<dependencies>
@@ -25,6 +33,13 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<dependency>
+				<groupId>lu.kbra</groupId>
+				<artifactId>pclib</artifactId>
+				<version>${pclib.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -32,12 +47,10 @@
 		<dependency>
 			<groupId>lu.kbra</groupId>
 			<artifactId>pclib-db-spring</artifactId>
-			<version>${pclib.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>lu.kbra</groupId>
 			<artifactId>pclib-db-all</artifactId>
-			<version>${pclib.version}</version>
 		</dependency>
 
 		<dependency>
@@ -67,7 +80,8 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${spring-boot.version}</version>
 				<configuration>
-					<mainClass>lu.kbra.pclib.db.sample.PCLibDbSampleV2Application</mainClass>
+					<mainClass>
+						lu.kbra.pclib.db.sample.PCLibDbSampleV2Application</mainClass>
 					<jvmArguments>--add-opens java.base/java.lang=ALL-UNNAMED</jvmArguments>
 				</configuration>
 			</plugin>
