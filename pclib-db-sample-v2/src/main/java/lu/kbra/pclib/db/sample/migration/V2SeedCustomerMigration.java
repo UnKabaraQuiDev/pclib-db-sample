@@ -7,9 +7,11 @@ import java.sql.SQLException;
 import org.springframework.stereotype.Component;
 
 import lu.kbra.pclib.db.base.DataBase;
+import lu.kbra.pclib.db.domain.dialect.SQLStructureVisitor;
 import lu.kbra.pclib.db.exception.DBException;
 import lu.kbra.pclib.db.migration.DataBaseMigration;
-import lu.kbra.pclib.db.sample.config.DemoTableOptions;
+import lu.kbra.pclib.db.sample.table.CustomerTableAccess;
+import lu.kbra.pclib.db.utils.impl.DataBaseEntryUtils;
 
 @Component
 public class V2SeedCustomerMigration implements DataBaseMigration {
@@ -25,33 +27,22 @@ public class V2SeedCustomerMigration implements DataBaseMigration {
 	}
 
 	@Override
-	public void up(final DataBase dataBase, final Connection connection) throws DBException {
-		final String protocol = dataBase.getConnector().getProtocol();
-		final String sql = "INSERT INTO " + this.customersTable(dataBase) + " (" + this.quote(dataBase, "tenant") + ", "
-				+ this.quote(dataBase, "email") + ", " + this.quote(dataBase, "external_reference") + ", "
-				+ this.quote(dataBase, "name") + ", " + this.quote(dataBase, "note") + ") VALUES (?, ?, ?, ?, ?)";
+	public void up(final DataBase database, final Connection connection) throws DBException {
+		final CustomerTableAccess table = database.getTables().stream().filter(CustomerTableAccess.class::isInstance)
+				.map(CustomerTableAccess.class::cast).findFirst().get();
+
+		final DataBaseEntryUtils dbEntryUtils = database.getDataBaseEntryUtils();
+		final SQLStructureVisitor structureVisitor = dbEntryUtils.getStructureVisitor();
+		final String protocol = database.getConnector().getProtocol();
+		final String sql = "UPDATE " + table.getQualifiedName() + " SET "
+				+ structureVisitor.qualifiedName(structureVisitor.fieldToColumnName("loyaltyTier")) + " = ?;";
 
 		try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-			stmt.setString(1, "migration-v2");
-			stmt.setString(2, "seed-v2@" + protocol + ".example");
-			stmt.setString(3, "seed-v2-" + protocol);
-			stmt.setString(4, "Migration Seed V2 " + protocol);
-			stmt.setString(5, "Inserted by the v2 DataBaseMigration");
+			stmt.setString(1, "32 chars :)");
 			stmt.executeUpdate();
 		} catch (final SQLException e) {
 			throw new DBException("Could not run v2 seed migration for " + protocol + ".", e);
 		}
 	}
 
-	private String customersTable(final DataBase dataBase) {
-		if ("postgresql".equals(dataBase.getConnector().getProtocol())) {
-			return this.quote(dataBase, DemoTableOptions.POSTGRES_SCHEMA) + "." + this.quote(dataBase, "customers");
-		}
-		return this.quote(dataBase, "customers");
-	}
-
-	private String quote(final DataBase dataBase, final String identifier) {
-		final String escaped = identifier.replace("\"", "\"\"").replace("`", "``");
-		return "mysql".equals(dataBase.getConnector().getProtocol()) ? "`" + escaped + "`" : "\"" + escaped + "\"";
-	}
 }

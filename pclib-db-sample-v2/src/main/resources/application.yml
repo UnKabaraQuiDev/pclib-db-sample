@@ -9,7 +9,7 @@ logging:
 pclib:
   db:
     enabled: true
-    auto-create: false
+    auto-create: true
     auto-migrate: true
     auto-add-columns: true
     auto-remove-columns: false
