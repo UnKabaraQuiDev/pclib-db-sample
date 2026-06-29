@@ -10,7 +10,7 @@ import lu.kbra.pclib.db.dbms.DbmsProvider;
 import lu.kbra.pclib.db.dbms.MySQLDbmsProvider;
 import lu.kbra.pclib.db.dbms.PostgreSQLDbmsProvider;
 import lu.kbra.pclib.db.dbms.SQLiteDbmsProvider;
-import lu.kbra.pclib.db.domain.dialect.AbstractSQLFunctionResolver;
+import lu.kbra.pclib.db.domain.dialect.StrictMapSQLFunctionResolver;
 import lu.kbra.pclib.db.domain.dialect.SQLFunctionResolver;
 import lu.kbra.pclib.db.domain.dialect.SQLStructureVisitor;
 import lu.kbra.pclib.db.utils.registry.ColumnTypeRegistry;
@@ -55,7 +55,7 @@ public class DemoFunctionConfiguration {
 
 		@Override
 		public SQLFunctionResolver createFunctionResolver() {
-			final AbstractSQLFunctionResolver resolver = new AbstractSQLFunctionResolver();
+			final StrictMapSQLFunctionResolver resolver = new StrictMapSQLFunctionResolver();
 			resolver.putAll(this.delegate.createFunctionResolver());
 			resolver.put("text_length", this.textLengthFunctionName);
 			return resolver;

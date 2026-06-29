@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
 import jakarta.annotation.PostConstruct;
-import lu.kbra.pclib.db.domain.dialect.AbstractSQLFunctionResolver;
+import lu.kbra.pclib.db.domain.dialect.StrictMapSQLFunctionResolver;
 import lu.kbra.pclib.db.utils.impl.DataBaseEntryUtils;
 
 @Configuration
@@ -24,9 +24,9 @@ public class DemoFunctionConfiguration {
 
 	@PostConstruct
 	public void init() {
-		((AbstractSQLFunctionResolver) mySQLDbmsProvider.getFunctionResolver()).put("text_length", "LENGTH");
-		((AbstractSQLFunctionResolver) postgreSQLDbmsProvider.getFunctionResolver()).put("text_length", "char_length");
-		((AbstractSQLFunctionResolver) sqLiteDbmsProvider.getFunctionResolver()).put("text_length", "length");
+		((StrictMapSQLFunctionResolver) mySQLDbmsProvider.getFunctionResolver()).put("text_length", "LENGTH");
+		((StrictMapSQLFunctionResolver) postgreSQLDbmsProvider.getFunctionResolver()).put("text_length", "char_length");
+		((StrictMapSQLFunctionResolver) sqLiteDbmsProvider.getFunctionResolver()).put("text_length", "length");
 	}
 
 }
