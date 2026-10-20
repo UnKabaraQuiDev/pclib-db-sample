@@ -7,17 +7,16 @@ import lu.kbra.pclib.db.annotations.query.Param;
 import lu.kbra.pclib.db.annotations.query.Query;
 import lu.kbra.pclib.db.sample.domain.CustomerData;
 import lu.kbra.pclib.db.table.AbstractDBTable;
-import lu.kbra.pclib.db.utils.SQLRequestType;
 
 public interface CustomerTableAccess extends AbstractDBTable<CustomerData> {
 
 	@Query("SELECT * FROM {NAME} WHERE {Q:email} = ?;")
 	Optional<CustomerData> byEmail(String email);
 
-	@Query("SELECT * FROM {NAME} WHERE {Q:tenant} = ? AND {Q:external_reference} = ?;")
+	@Query("SELECT * FROM {NAME} WHERE {Q:tenant} = ? AND {M:externalReference} = ?;")
 	Optional<CustomerData> byTenantAndReference(String tenant, String externalReference);
 
-	@Query("SELECT {F:text_length}({Q:name}) FROM {NAME} WHERE {Q:email} = ?;")
+	@Query("SELECT {F:length}({Q:name}) FROM {NAME} WHERE {Q:email} = ?;")
 	int nameLengthByEmail(String email);
 
 	@Query("SELECT * FROM {NAME} WHERE {Q:name} LIKE ? ORDER BY {Q:id} ASC;")
@@ -31,10 +30,5 @@ public interface CustomerTableAccess extends AbstractDBTable<CustomerData> {
 
 	@Query
 	List<CustomerData> all();
-
-	@Override
-	default void requestHook(SQLRequestType type, Object query) {
-		System.err.println(query);
-	}
 
 }

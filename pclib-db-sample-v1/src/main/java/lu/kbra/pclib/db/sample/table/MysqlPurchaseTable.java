@@ -3,16 +3,16 @@ package lu.kbra.pclib.db.sample.table;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import lu.kbra.pclib.db.base.DataBase;
-import lu.kbra.pclib.db.sample.config.DemoTableOptions;
+import lu.kbra.pclib.db.annotations.queryable.def.NameOverride;
+import lu.kbra.pclib.db.base.DeferredDatabase;
 import lu.kbra.pclib.db.sample.domain.PurchaseData;
-import lu.kbra.pclib.db.table.DeferredDataBaseTable;
+import lu.kbra.pclib.db.table.DeferredDatabaseTable;
 
 @Component
-@DemoTableOptions(name = "purchases")
-public abstract class MysqlPurchaseTable extends DeferredDataBaseTable<PurchaseData> implements PurchaseTableAccess {
+@NameOverride("purchases")
+public abstract class MysqlPurchaseTable extends DeferredDatabaseTable<PurchaseData> implements PurchaseTableAccess {
 
-	public MysqlPurchaseTable(@Qualifier("mysqlDemo") final DataBase dataBase) {
+	public MysqlPurchaseTable(@Qualifier("mysqlDemo") final DeferredDatabase dataBase) {
 		super(dataBase);
 	}
 }

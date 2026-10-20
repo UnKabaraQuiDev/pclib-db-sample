@@ -1,9 +1,13 @@
 package lu.kbra.pclib.db.sample.domain;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lu.kbra.pclib.db.annotations.entry.Column;
-import lu.kbra.pclib.db.impl.DataBaseEntry;
+import lu.kbra.pclib.db.impl.DatabaseEntry.ReadOnlyDatabaseEntry;
 
-public class PurchaseSummaryData implements DataBaseEntry.ReadOnlyDataBaseEntry {
+@Data
+@NoArgsConstructor
+public class PurchaseSummaryData implements ReadOnlyDatabaseEntry {
 
 	@Column(name = "customer_id")
 	public long customerId;
@@ -20,21 +24,4 @@ public class PurchaseSummaryData implements DataBaseEntry.ReadOnlyDataBaseEntry 
 	@Column(name = "amount")
 	public Money amount;
 
-	public PurchaseSummaryData() {
-	}
-
-	@Override
-	public PurchaseSummaryData clone() {
-		try {
-			return (PurchaseSummaryData) super.clone();
-		} catch (final CloneNotSupportedException e) {
-			throw new AssertionError(e);
-		}
-	}
-
-	@Override
-	public String toString() {
-		return "PurchaseSummaryData[customerEmail=" + this.customerEmail + ", purchaseId=" + this.purchaseId
-				+ ", amount=" + this.amount + "]";
-	}
 }

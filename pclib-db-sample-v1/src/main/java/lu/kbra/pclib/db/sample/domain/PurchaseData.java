@@ -2,14 +2,21 @@ package lu.kbra.pclib.db.sample.domain;
 
 import java.time.LocalDate;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lu.kbra.pclib.db.annotations.entry.AutoIncrement;
 import lu.kbra.pclib.db.annotations.entry.Column;
 import lu.kbra.pclib.db.annotations.entry.DefaultValue;
+import lu.kbra.pclib.db.annotations.entry.ForeignKey;
 import lu.kbra.pclib.db.annotations.entry.PrimaryKey;
 import lu.kbra.pclib.db.annotations.entry.def.MaxLength;
-import lu.kbra.pclib.db.impl.DataBaseEntry;
+import lu.kbra.pclib.db.domain.table.ForeignKeyData.OnAction;
+import lu.kbra.pclib.db.impl.DatabaseEntry;
+import lu.kbra.pclib.db.sample.table.CustomerTableAccess;
 
-public class PurchaseData implements DataBaseEntry {
+@Data
+@NoArgsConstructor
+public class PurchaseData implements DatabaseEntry {
 
 	@Column
 	@PrimaryKey
@@ -17,6 +24,7 @@ public class PurchaseData implements DataBaseEntry {
 	public long id;
 
 	@Column
+	@ForeignKey(table = CustomerTableAccess.class, name = "customers", onDelete = OnAction.CASCADE, onUpdate = OnAction.CASCADE)
 	public long customerId;
 
 	@Column
@@ -31,27 +39,10 @@ public class PurchaseData implements DataBaseEntry {
 	@DefaultValue(dbms = "sqlite", value = "'new-sqlite'")
 	public @MaxLength(24) String status;
 
-	public PurchaseData() {
-	}
-
 	public PurchaseData(final long customerId, final Money amount, final LocalDate orderedOn) {
 		this.customerId = customerId;
 		this.amount = amount;
 		this.orderedOn = orderedOn;
 	}
 
-	@Override
-	public PurchaseData clone() {
-		try {
-			return (PurchaseData) super.clone();
-		} catch (final CloneNotSupportedException e) {
-			throw new AssertionError(e);
-		}
-	}
-
-	@Override
-	public String toString() {
-		return "PurchaseData[id=" + this.id + ", customerId=" + this.customerId + ", amount=" + this.amount
-				+ ", status=" + this.status + "]";
-	}
 }
