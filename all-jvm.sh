@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
-docker compose down --volumes --remove-orphans
+./build-jvm.sh
+./run-jvm.sh

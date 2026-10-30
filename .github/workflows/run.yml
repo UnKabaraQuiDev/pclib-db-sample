@@ -1,0 +1,279 @@
+name: pclib-db-sample int. tests
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pclib-integration-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update-submodules:
+    name: Update PCLib submodules
+    runs-on: ubuntu-latest
+
+    outputs:
+      commit: ${{ steps.push.outputs.commit }}
+
+    steps:
+      - name: Checkout parent repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Update PCLib main and dev
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # Use HTTPS so the workflow token can authenticate.
+          git config --global \
+            url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf \
+            "git@github.com:"
+
+          git submodule update --init pclib-main pclib-dev
+
+          git -C pclib-main fetch origin main
+          git -C pclib-main checkout --detach origin/main
+
+          git -C pclib-dev fetch origin dev
+          git -C pclib-dev checkout --detach origin/dev
+
+          echo "PCLib main: $(git -C pclib-main rev-parse HEAD)"
+          echo "PCLib dev:  $(git -C pclib-dev rev-parse HEAD)"
+
+          git add pclib-main pclib-dev
+
+          if ! git diff --cached --quiet; then
+            git commit -m "ci: update PCLib submodules"
+          fi
+
+      - name: Push updated references
+        id: push
+        run: |
+          set -euo pipefail
+
+          BRANCH="${GITHUB_REF_NAME}"
+          git push origin "HEAD:refs/heads/${BRANCH}"
+
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Update summary
+        if: always()
+        run: |
+          {
+            echo "## Submodule update"
+            echo
+            echo "Status: ${{ job.status }}"
+            echo
+            echo "| Branch | Commit |"
+            echo "|---|---|"
+            echo "| main | $(git -C pclib-main rev-parse --short HEAD 2>/dev/null || echo unavailable) |"
+            echo "| dev | $(git -C pclib-dev rev-parse --short HEAD 2>/dev/null || echo unavailable) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  test:
+    name: ${{ matrix.branch }} / ${{ matrix.runtime }}
+    needs: update-submodules
+    if: needs.update-submodules.result == 'success'
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        branch: [main, dev]
+        runtime: [native, jvm]
+
+    steps:
+      - name: Checkout updated repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.update-submodules.outputs.commit }}
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: graalvm
+          java-version: '25'
+          cache: maven
+
+      - name: Initialize result tracking
+        run: |
+          mkdir -p results
+          echo "pending" > results/pclib
+          echo "pending" > results/build
+          echo "pending" > results/run
+
+      - name: Build PCLib
+        id: pclib
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+
+          PROFILE=""
+          if [[ "${{ matrix.runtime }}" == "native" ]]; then
+            PROFILE="-Pnative"
+          fi
+
+          mvn -f "pclib-${{ matrix.branch }}/pom.xml" \
+            -B -T 4 $PROFILE clean install \
+            2>&1 | tee results/pclib.log
+
+          status=${PIPESTATUS[0]}
+          echo "$status" > results/pclib
+          exit "$status"
+
+      - name: Build sample
+        id: build
+        if: steps.pclib.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+
+          chmod +x "./build-${{ matrix.runtime }}.sh"
+
+          "./build-${{ matrix.runtime }}.sh" \
+            2>&1 | tee results/build.log
+
+          status=${PIPESTATUS[0]}
+          echo "$status" > results/build
+          exit "$status"
+
+      - name: Run sample
+        id: run
+        if: steps.build.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+
+          chmod +x "./run-${{ matrix.runtime }}.sh"
+
+          "./run-${{ matrix.runtime }}.sh" \
+            2>&1 | tee results/run.log
+
+          status=${PIPESTATUS[0]}
+          echo "$status" > results/run
+          exit "$status"
+
+      - name: Generate matrix result
+        if: always()
+        shell: bash
+        run: |
+          get_result() {
+            case "$1" in
+              success) echo "PASS" ;;
+              failure) echo "FAIL" ;;
+              *) echo "SKIPPED" ;;
+            esac
+          }
+
+          PCLIB=$(get_result "${{ steps.pclib.outcome }}")
+          BUILD=$(get_result "${{ steps.build.outcome }}")
+          RUN=$(get_result "${{ steps.run.outcome }}")
+
+          if [[ "$PCLIB" == "FAIL" ]]; then
+            FAILED_AT="PCLib compilation"
+          elif [[ "$BUILD" == "FAIL" ]]; then
+            FAILED_AT="Sample Docker build"
+          elif [[ "$RUN" == "FAIL" ]]; then
+            FAILED_AT="Sample execution"
+          elif [[ "$RUN" == "PASS" ]]; then
+            FAILED_AT="None"
+          else
+            FAILED_AT="Setup or cancellation"
+          fi
+
+          {
+            echo "## ${{ matrix.branch }} / ${{ matrix.runtime }}"
+            echo
+            echo "| Stage | Result |"
+            echo "|---|---|"
+            echo "| PCLib compilation | $PCLIB |"
+            echo "| Sample build | $BUILD |"
+            echo "| Sample execution | $RUN |"
+            echo
+            echo "**Failed at:** $FAILED_AT"
+          } | tee results/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+          {
+            echo "branch=${{ matrix.branch }}"
+            echo "runtime=${{ matrix.runtime }}"
+            echo "pclib=$PCLIB"
+            echo "build=$BUILD"
+            echo "run=$RUN"
+            echo "failed_at=$FAILED_AT"
+          } > results/result.env
+
+      - name: Upload logs and results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: result-${{ matrix.branch }}-${{ matrix.runtime }}
+          path: results/
+          if-no-files-found: ignore
+
+      - name: Fail job when a stage failed
+        if: always()
+        run: |
+          [[ "${{ steps.pclib.outcome }}" == "success" ]] &&
+          [[ "${{ steps.build.outcome }}" == "success" ]] &&
+          [[ "${{ steps.run.outcome }}" == "success" ]]
+
+  summary:
+    name: Combined test summary
+    needs: [update-submodules, test]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download results
+        if: needs.test.result != 'skipped'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: result-*
+          path: results
+          merge-multiple: false
+
+      - name: Generate summary
+        shell: bash
+        run: |
+          {
+            echo "# PCLib Integration Test Results"
+            echo
+            echo "Submodule update: ${{ needs.update-submodules.result }}"
+            echo
+            echo "| Branch | Runtime | PCLib | Build | Run | Failed at |"
+            echo "|---|---|---|---|---|---|"
+
+            for branch in main dev; do
+              for runtime in native jvm; do
+                file="results/result-${branch}-${runtime}/result.env"
+
+                if [[ -f "$file" ]]; then
+                  source "$file"
+                  echo "| $branch | $runtime | $pclib | $build | $run | $failed_at |"
+                else
+                  echo "| $branch | $runtime | - | - | - | No result |"
+                fi
+              done
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check overall result
+        run: |
+          [[ "${{ needs.update-submodules.result }}" == "success" ]] &&
+          [[ "${{ needs.test.result }}" == "success" ]]

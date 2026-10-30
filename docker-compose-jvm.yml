@@ -1,0 +1,106 @@
+name: pclib-db-sample-jvm
+
+x-sample-environment: &sample-environment
+  PCLIB_SAMPLE_SQLITE_DIR: /workspace/target/pclib-db-sample-sqlite
+  PCLIB_SAMPLE_MYSQL_HOST: mysql
+  PCLIB_SAMPLE_MYSQL_PORT: "3306"
+  PCLIB_SAMPLE_MYSQL_USERNAME: root
+  PCLIB_SAMPLE_MYSQL_PASSWORD: ${PCLIB_SAMPLE_MYSQL_PASSWORD:-root}
+  PCLIB_SAMPLE_POSTGRES_HOST: postgres
+  PCLIB_SAMPLE_POSTGRES_PORT: "5432"
+  PCLIB_SAMPLE_POSTGRES_USERNAME: postgres
+  PCLIB_SAMPLE_POSTGRES_PASSWORD: ${PCLIB_SAMPLE_POSTGRES_PASSWORD:-postgres}
+
+x-sample-service: &sample-service
+  profiles: [samples]
+  working_dir: /workspace
+  environment: *sample-environment
+  volumes:
+    - sqlite-data:/workspace/target/pclib-db-sample-sqlite
+  depends_on:
+    mysql:
+      condition: service_healthy
+    postgres:
+      condition: service_healthy
+    sqlite-init:
+      condition: service_completed_successfully
+
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PCLIB_SAMPLE_MYSQL_PASSWORD:-root}
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: pclib_sample_mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${PCLIB_SAMPLE_POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: pclib_sample_postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pclib_sample_postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  # Make the SQLite named volume writable by the JVM application container.
+  sqlite-init:
+    image: busybox:1.36
+    profiles: [samples]
+    command: ["sh", "-c", "chmod 0777 /sqlite"]
+    volumes:
+      - sqlite-data:/sqlite
+
+  app-v1:
+    <<: *sample-service
+    image: pclib-db-sample-jvm-v1:${PCLIB_SAMPLE_IMAGE_TAG:-1.2.4-SNAPSHOT}
+    build:
+      context: .
+      dockerfile: Dockerfile.jvm
+      args:
+        VERSION: "1"
+
+  app-v2:
+    <<: *sample-service
+    image: pclib-db-sample-jvm-v2:${PCLIB_SAMPLE_IMAGE_TAG:-1.2.4-SNAPSHOT}
+    build:
+      context: .
+      dockerfile: Dockerfile.jvm
+      args:
+        VERSION: "2"
+
+  app-v3:
+    <<: *sample-service
+    image: pclib-db-sample-jvm-v3:${PCLIB_SAMPLE_IMAGE_TAG:-1.2.4-SNAPSHOT}
+    build:
+      context: .
+      dockerfile: Dockerfile.jvm
+      args:
+        VERSION: "3"
+
+  app-v4:
+    <<: *sample-service
+    image: pclib-db-sample-jvm-v4:${PCLIB_SAMPLE_IMAGE_TAG:-1.2.4-SNAPSHOT}
+    build:
+      context: .
+      dockerfile: Dockerfile.jvm
+      args:
+        VERSION: "4"
+
+volumes:
+  mysql-data:
+  postgres-data:
+  sqlite-data:

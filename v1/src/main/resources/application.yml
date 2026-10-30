@@ -15,6 +15,7 @@ pclib:
     auto-remove-columns: false
     expose-connector: true
     expose-database: true
+    print-create-view: true
 
     sqliteDemo:
       qualifier: sqliteDemo

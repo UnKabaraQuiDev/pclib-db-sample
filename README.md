@@ -1,4 +1,4 @@
-# PCLib DB native-image schema evolution test
+# PCLib DB native-image schema sample test
 
 This is a four-module Maven project derived from the supplied v1 sample.
 Each module is a separate Spring Boot 4.1 / Java 25 GraalVM native image, and
@@ -19,6 +19,21 @@ Run in the project root:
 ./build.sh       # Build native images v1, v2, v3, v4 in order
 ./run.sh         # Start DBs, run each image in order, clean up on exit
 ```
+
+### JVM / Docker mode (no GraalVM native-image build)
+
+```bash
+./build-jvm.sh   # Package four executable Spring Boot JARs, then build JVM Docker images
+./run-jvm.sh     # Start Docker databases, run v1 → v4 in JVM containers, clean up
+# or ./all-jvm.sh to do both
+```
+
+The JVM image uses Eclipse Temurin Java 25. The JVM build skips Spring AOT.
+`docker-compose-native.yml` and `docker-compose-jvm.yml` use separate Compose
+project names and database volumes, so the two workflows do not share data.
+Use `KEEP_DATA=1 ./run-jvm.sh` to retain JVM databases for debugging, then
+`./clean-jvm.sh` to remove them. Both cleanup scripts delete their mode's
+database volumes. The original `docker-compose.yml` is retained for compatibility.
 
 Or run `./all.sh` to do both. The default `run.sh` cleanup executes even
 when a version fails, and calls `docker compose down --volumes --remove-orphans`.

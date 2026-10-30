@@ -1,0 +1,8 @@
+[submodule "pclib-main"]
+	path = pclib-main
+	url = git@github.com:UnKabaraQuiDev/PCLib.git
+	branch = main
+[submodule "pclib-dev"]
+	path = pclib-dev
+	url = git@github.com:UnKabaraQuiDev/PCLib.git
+	branch = dev

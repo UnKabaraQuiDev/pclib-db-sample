@@ -31,7 +31,7 @@ printf '%s\n' 1 2 3 4 |
     echo "[v${version}] Building..."
 
     if mvn -B -ntp -pl "v${version}" \
-        -DskipTests spring-boot:build-image; then
+        -DskipTests clean spring-boot:build-image; then
       echo "[v${version}] Build succeeded."
     else
       echo "[v${version}] Build FAILED:" >&2

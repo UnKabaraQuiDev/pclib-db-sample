@@ -15,7 +15,7 @@ cleanup() {
     echo "KEEP_DATA=1: preserving Compose containers and database volumes."
   else
     echo "=== Cleanup: stopping Compose and removing its database/SQLite volumes ==="
-    docker compose down --volumes --remove-orphans || {
+    docker compose -f docker-compose-native.yml --profile samples down --volumes --remove-orphans || {
       echo "WARNING: Docker cleanup did not complete. Run ./clean.sh manually." >&2
       if [[ "$status" -eq 0 ]]; then status=1; fi
     }
@@ -27,12 +27,12 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 
 echo "=== Starting MySQL and PostgreSQL; waiting for health checks ==="
-docker compose up --detach --wait mysql postgres
+docker compose -f docker-compose-native.yml --profile samples up --detach --wait mysql postgres
 
 for version in 1 2 3 4; do
   echo
   echo "=== Running schema version v${version} ==="
-  docker compose run --rm "app-v${version}"
+  docker compose -f docker-compose-native.yml run --rm "app-v${version}"
 done
 
 echo
