@@ -3,9 +3,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>lu.kbra</groupId>
+	<parent>
+		<groupId>lu.kbra</groupId>
+		<artifactId>pclib</artifactId>
+		<version>${revision}</version>
+		<relativePath>parent-pom.xml</relativePath>
+	</parent>
+
 	<artifactId>pclib-db-sample-parent</artifactId>
-	<version>${pclib.version}</version>
 
 	<packaging>pom</packaging>
 	<name>PCLib DB schema sample samples</name>
@@ -18,8 +23,8 @@
 	</modules>
 
 	<properties>
+		<pclib-path>pclib-main/</pclib-path>
 		<java.version>25</java.version>
-		<pclib.version>1.2.4-SNAPSHOT</pclib.version>
 		<spring-boot.version>4.1.0</spring-boot.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.proc>full</maven.compiler.proc>
@@ -31,13 +36,6 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
 				<version>${spring-boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>lu.kbra</groupId>
-				<artifactId>pclib</artifactId>
-				<version>${pclib.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

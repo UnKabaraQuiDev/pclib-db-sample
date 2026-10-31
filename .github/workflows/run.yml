@@ -122,13 +122,8 @@ jobs:
         run: |
           set -o pipefail
 
-          PROFILE=""
-          if [[ "${{ matrix.runtime }}" == "native" ]]; then
-            PROFILE="-Pnative"
-          fi
-
           mvn -f "pclib-${{ matrix.branch }}/pom.xml" \
-            -B -T 4 $PROFILE clean install \
+            -B -T 4 clean install -DskipTests \
             2>&1 | tee results/pclib.log
 
           status=${PIPESTATUS[0]}
@@ -144,6 +139,7 @@ jobs:
           set -o pipefail
 
           chmod +x "./build-${{ matrix.runtime }}.sh"
+          rm -f parent-pom.xml || true && ln -s pclib-${{ matrix.branch }}/pom.xml parent-pom.xml
 
           "./build-${{ matrix.runtime }}.sh" \
             2>&1 | tee results/build.log

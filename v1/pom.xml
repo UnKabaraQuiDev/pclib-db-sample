@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>lu.kbra</groupId>
 		<artifactId>pclib-db-sample-parent</artifactId>
-		<version>${pclib.version}</version>
+		<version>${revision}</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
