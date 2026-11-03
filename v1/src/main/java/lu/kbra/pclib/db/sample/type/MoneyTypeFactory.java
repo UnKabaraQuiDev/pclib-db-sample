@@ -5,12 +5,12 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import lu.kbra.pclib.db.dbms.registry.ColumnTypeRegistry;
 import lu.kbra.pclib.db.domain.column.type.ColumnType;
 import lu.kbra.pclib.db.domain.column.type.EncodingType;
 import lu.kbra.pclib.db.sample.domain.Money;
 import lu.kbra.pclib.db.type.factory.DatabaseColumnTypeFactory;
 import lu.kbra.pclib.db.utils.registry.ColumnTypeFactory;
-import lu.kbra.pclib.db.utils.registry.ColumnTypeRegistry;
 
 @Component
 public class MoneyTypeFactory implements DatabaseColumnTypeFactory {
