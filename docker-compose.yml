@@ -67,19 +67,19 @@ services:
 
   app-v1:
     <<: *sample-service
-    image: pclib-db-sample-v1:${PCLIB_SAMPLE_IMAGE_TAG:-1.2.4-SNAPSHOT}
+    image: pclib-db-sample-v1:${PCLIB_SAMPLE_IMAGE_TAG}
 
   app-v2:
     <<: *sample-service
-    image: pclib-db-sample-v2:${PCLIB_SAMPLE_IMAGE_TAG:-1.2.4-SNAPSHOT}
+    image: pclib-db-sample-v2:${PCLIB_SAMPLE_IMAGE_TAG}
 
   app-v3:
     <<: *sample-service
-    image: pclib-db-sample-v3:${PCLIB_SAMPLE_IMAGE_TAG:-1.2.4-SNAPSHOT}
+    image: pclib-db-sample-v3:${PCLIB_SAMPLE_IMAGE_TAG}
 
   app-v4:
     <<: *sample-service
-    image: pclib-db-sample-v4:${PCLIB_SAMPLE_IMAGE_TAG:-1.2.4-SNAPSHOT}
+    image: pclib-db-sample-v4:${PCLIB_SAMPLE_IMAGE_TAG}
 
 volumes:
   mysql-data:
